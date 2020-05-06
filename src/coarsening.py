@@ -2,7 +2,9 @@ import numpy as np
 import scipy.sparse
 import sklearn.metrics
 
-
+'''
+this code is adopted from  arXiv:1606.09375
+'''
 def laplacian(W, normalized=True):
     """Return graph Laplacian"""
 
@@ -315,4 +317,3 @@ def perm_data(x, indices):
         else:
             xnew[:,i] = np.zeros(N)
     return xnew
-
