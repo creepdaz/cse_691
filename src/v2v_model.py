@@ -9,82 +9,14 @@ import scipy
 import numpy as np
 import scipy.sparse
 import sklearn.metrics
-from coarsening import *
+import sys
+import os
 
-# grid graph
-grid_side = 30
-number_edges = 8
-metric = 'euclidean'
-A = grid_graph(grid_side,number_edges,metric) # create graph of Euclidean gri
-coarsening_levels = 1
-L, perm = coarsen(A, coarsening_levels)
-lmax =  1.1700704
+from src.coarsening import *
+from src.graphCNN import *
 
 
 
-
-def grid_graph(grid_side,number_edges,metric):
-    """Generate graph of a grid"""
-    z = grid(grid_side)
-    dist, idx = distance_sklearn_metrics(z, k=number_edges, metric=metric)
-    A = adjacency(dist, idx)
-    print("nb edges: ",A.nnz)
-    return A
-
-
-
-# return the grid of the map
-def grid(m, dtype=np.float32):
-    """Return coordinates of grid points"""
-    M = m**2
-    x = np.linspace(0,1,m, dtype=dtype)
-    y = np.linspace(0,1,m, dtype=dtype)
-    xx, yy = np.meshgrid(x, y)
-    z = np.empty((M,2), dtype)
-    z[:,0] = xx.reshape(M)
-    z[:,1] = yy.reshape(M)
-    return z
-
-
-def distance_sklearn_metrics(z, k=4, metric='euclidean'):
-    """Compute pairwise distances"""
-    #d = sklearn.metrics.pairwise.pairwise_distances(z, metric=metric, n_jobs=-2)
-    d = sklearn.metrics.pairwise.pairwise_distances(z, metric=metric, n_jobs=1)
-    # k-NN
-    idx = np.argsort(d)[:,1:k+1]
-    d.sort()
-    d = d[:,1:k+1]
-    return d, idx
-
-
-def adjacency(dist, idx):
-    """Return adjacency matrix of a kNN graph"""
-    M, k = dist.shape
-    assert M, k == idx.shape
-    assert dist.min() >= 0
-    assert dist.max() <= 1
-
-    # Pairwise distances
-    sigma2 = np.mean(dist[:,-1])**2
-    dist = np.exp(- dist**2 / sigma2)
-
-    # Weight matrix
-    I = np.arange(0, M).repeat(k)
-    J = idx.reshape(M*k)
-    V = dist.reshape(M*k)
-    W = scipy.sparse.coo_matrix((V, (I, J)), shape=(M, M))
-
-    # No self-connections
-    W.setdiag(0)
-
-    # Undirected graph
-    bigger = W.T > W
-    W = W - W.multiply(bigger) + W.T.multiply(bigger)
-
-    assert W.nnz % 2 == 0
-    assert np.abs(W - W.T).mean() < 1e-10
-    assert type(W) is scipy.sparse.csr.csr_matrix
-    return W
 
 
 class my_sparse_mm(torch.autograd.Function):
@@ -366,16 +298,16 @@ class V2VModel(nn.Module):
         # initialize the graph output of the current features
         net_para = []
         x_=[]
- 
+        '''
         if opt:
             graph1= gcn_v(net_para)
             graph_out = graph1(x)
         else:
             x_ =Variable(self.conv1(x) , requires_grad=True)
-  
+        '''
         
         x = self.back_layers(x)
-        x = x*self.ratio + x_*(1-self.ratio)
+        #x = x*self.ratio + x_*(1-self.ratio)
         x = self.output_layer(x)
         #x = merge_x(x,x,0.9)
         return x
