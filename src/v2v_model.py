@@ -16,8 +16,15 @@ from src.coarsening import *
 from src.graphCNN import *
 
 
+grid_side = 52
+number_edges = 8
+metric = 'euclidean'
+A = grid_graph(grid_side,number_edges,metric) # create graph of Euclidean grid
 
-
+# Compute coarsened graphs
+coarsening_levels = 1
+L, perm = coarsen(A, coarsening_levels)
+print(L)
 
 class my_sparse_mm(torch.autograd.Function):
     """
@@ -277,9 +284,11 @@ class V2VModel(nn.Module):
         )
 
         self.conv1= nn.Conv3d(32,32,1,1)
+        self.conv_graph = nn.Conv3d(32,1,1,1)
+        self.grap_pool = nn.MaxPool3d(3)
         self.ratio = 0.9
         self.output_layer = nn.Conv3d(32, output_channels, kernel_size=1, stride=1, padding=0)
-
+        self.opt =False
         self._initialize_weights()
 
 
@@ -291,23 +300,29 @@ class V2VModel(nn.Module):
         return res
 
     def forward(self, x):
-        opt = False
-        x = self.front_layers(x)
-        x = self.encoder_decoder(x)
         net_para = [1,2,3,4,5]
         # initialize the graph output of the current features
         net_para = []
         x_=[]
         
-        if opt:
-            graph1= gcn_v(net_para)
-            graph_out = graph1(x)
+        if self.opt:
+            #input size is [12,32,44,44,44]
+            x_ = x.clone()
+            # [12,1,44,44,44]
+            x_ = self.conv_graph(x) 
+            x_= self.grap_pool(x_)
+            #[12 ,1 ,14,14,14]
+            x_ = x_.view(12,14*14*14)
+
+
+
+
         else:
             x_ =Variable(self.conv1(x) , requires_grad=True)
-     
+        
         
         x = self.back_layers(x)
-        x = x*self.ratio + x_*(1-self.ratio)
+        #x = x*self.ratio + x_*(1-self.ratio)
         x = self.output_layer(x)
         #x = merge_x(x,x,0.9)
         return x
