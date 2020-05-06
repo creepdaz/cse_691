@@ -1,3 +1,3 @@
-cd cse_691
-PYTHONPATH=./ python ./experiments/msra-subject3/main.py
+cd cse_691_
+PYTHONPATH=./ python3 ./experiments/msra-subject3/main.py
 
