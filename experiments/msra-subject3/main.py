@@ -66,7 +66,7 @@ batch_size = 12
 # Data
 print('==> Preparing data ..')
 data_dir = r'/home/daz/cse_691/datasets/cvpr15_MSRAHandGestureDB'
-center_dir = r'/home/cse_691/V2V-PoseNet-pytorch/datasets/center'
+center_dir = r'/home/daz/cse_691//datasets/center'
 keypoints_num = 21
 test_subject_id = 3
 cubic_size = 200
