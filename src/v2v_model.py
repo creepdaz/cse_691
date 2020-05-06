@@ -298,16 +298,16 @@ class V2VModel(nn.Module):
         # initialize the graph output of the current features
         net_para = []
         x_=[]
-        '''
+        
         if opt:
             graph1= gcn_v(net_para)
             graph_out = graph1(x)
         else:
             x_ =Variable(self.conv1(x) , requires_grad=True)
-        '''
+     
         
         x = self.back_layers(x)
-        #x = x*self.ratio + x_*(1-self.ratio)
+        x = x*self.ratio + x_*(1-self.ratio)
         x = self.output_layer(x)
         #x = merge_x(x,x,0.9)
         return x
