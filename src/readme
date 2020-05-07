@@ -1,1 +1,3 @@
+The corsening and grid.py is modified from  arXiv:1606.09375<br />
+The v2v model is modified by adding Graph CNN and changing the size of stacked hourglass model from V2V pose Net
 
